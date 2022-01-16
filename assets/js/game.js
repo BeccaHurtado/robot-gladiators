@@ -7,6 +7,7 @@ var randomNumber = function(min, max) {
     return value;
 };
 
+// function to check if player wants to fight or skip
 var fightOrSkip = function() {
     //ask player if they'd like to fight or skip using fightOrSkip function
     var promptFight = window.prompt('Would you like to FIGHT or SKIP this battle? Enter "FIGHT" or "SKIP" to choose.');
@@ -14,11 +15,13 @@ var fightOrSkip = function() {
     // Conditional Recursive Function Call
     if (promptFight === "" || promptFight === null) {
         window.alert("You need to provide a valid answer! Please try again.")
+        // use return to call it again and stop the rest of this function from running
         return fightOrSkip();
     }
     
     // if player picks "skip" confirm and then stop the loop
     promptFight = promptFight.toLowerCase();
+
     if (promptFight === "skip") {
         //confirm player wants to skip
         var confirmSkip = window.confirm("Are you sure you'd like to quit?");
@@ -26,32 +29,49 @@ var fightOrSkip = function() {
         // if yes (true), leave fight
         if (confirmSkip) {
             window.alert(playerInfo.name + " has decided to skip this fight. Goodbye!");
-            // subtract money from playerMoney for skipping
+            // subtract money from playerMoney for skipping, but don't let them go into the negative
             playerInfo.money = Math.max(0, playerInfo.money - 10);
+            // stop while() loop using break; and enter next fight
             
             // return true if player wants to leave
             return true;
         }
-        shop();
     }
     return false;
 }
 
 // fight function ( now with parameter for enemy's name )
 var fight = function (enemy) {
+    // track of who goes first
+    var isPlayerTurn = true;
 
+    // randomly change turn order
+    if (Math.random() > 0.5) {
+        isPlayerTurn = false;
+    }
+   
     while (playerInfo.health > 0 && enemy.health > 0) {
+        if (isPlayerTurn) {
+        // ask player if they'd like to fight or skip
         if (fightOrSkip()){
+            // if true, leave fight by breaking loop
             break;
         }
 
         // generate random damage based on player's attack power
         var damage = randomNumber(playerInfo.attack - 3, playerInfo.attack);
 
+        // remove enemy's health by subtracting the amount we set in the damage variable
         enemy.health = Math.max(0, enemy.health - damage);
-
         console.log(
-            playerInfo.name + " attacked " + enemy.name + ". " + enemy.name + " now has " + enemy.health + " health remaining."
+            playerInfo.name + 
+            " attacked " + 
+            enemy.name + 
+            ". " + 
+            enemy.name + 
+            " now has " + 
+            enemy.health + 
+            " health remaining."
         );
 
         // check enemy's health
@@ -66,13 +86,21 @@ var fight = function (enemy) {
         } else {
             window.alert(enemy.name + " still has " + enemy.health + " health left.");
         }
-
-        // remove player's health by subtracting the amount set in the enemy.attack variable
+        // player gets attacked first
+    } else {
         var damage = randomNumber(enemy.attack - 3, enemy.attack);
 
+        // remove player's health by subtracting the amount set in the enemy.attack variable
         playerInfo.health = Math.max(0, playerInfo.health - damage);
         console.log(
-            enemy.name + " attacked " + playerInfo.name + ". " + playerInfo.name + " now has " + playerInfo.health + " health remaining."
+            enemy.name + 
+            " attacked " + 
+            playerInfo.name + 
+            ". " + 
+            playerInfo.name + 
+            " now has " + 
+            playerInfo.health + 
+            " health remaining."
         );
         
         // check player's health
@@ -80,18 +108,25 @@ var fight = function (enemy) {
             window.alert(playerInfo.name + " has died!");
             // leave while() loop if player is dead
             break;
-            } else {
-            window.alert(playerInfo.name + " still has " + playerInfo.health + " health left.");
-            }
+        } else {
+            window.alert(playerInfo.name + " still has " + playerInfo.health + " health left.");           
         }
-    };
+    }
+    // switch turn order for next round
+    isPlayerTurn = !isPlayerTurn;
+    }   
+};
     
     // function to start a new game
     var startGame = function() {
         // reset player stats
         playerInfo.reset();
 
+        // fight each enemy robot by looping over them and fighting them one at a time
         for (var i = 0; i < enemyInfo.length; i++) {
+            // check player stats
+            console.log(playerInfo);
+
             // if player is still alive, keep fighting
             if (playerInfo.health > 0) {
                 // let player know what round they are in, remember that arrays start at 0 so it needs to have 1 added to it
@@ -102,6 +137,8 @@ var fight = function (enemy) {
                 
                 // reset enemy.health before starting new fight
                 pickedEnemyObj.health = randomNumber(40, 60);
+
+                console.log(pickedEnemyObj);
                 
                 // pass the pickedenemy.name variable's value into the fight function, where it will assime the value of the enemy.name parameter
                 fight(pickedEnemyObj);
@@ -124,6 +161,7 @@ var fight = function (enemy) {
                 break;
             }
         }
+
         // after the loop ends, player is either out of health or enemies to fight, so run the endGame function
         endGame();
     };
@@ -246,13 +284,8 @@ var enemyInfo = [
 }
 ];
 
-console.log(enemyInfo);
-console.log(enemyInfo[0]);
-console.log(enemyInfo[0].name);
-console.log(enemyInfo[0]['attack']);
-
 /* end game information / variables */
 
-    // start the game when the page loads
+// start the game when the page loads
 startGame();
     
